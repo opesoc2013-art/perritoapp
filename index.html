@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control Mascota</title>
-    <meta name="description" content="App para registrar vacunación y desparasitación de mascotas">
+    <meta name="description" content="App para registrar vacunación y desparasitación de mascotas con alertas automáticas">
     <meta name="theme-color" content="#4CAF50">
+    
+    <!-- Open Graph / WhatsApp Preview -->
     <meta property="og:title" content="🐾 Control Mascota">
     <meta property="og:description" content="App para registrar vacunación y desparasitación de mascotas con alertas automáticas.">
-    <meta property="og:image" content="images/preview.jpg">
+    <meta property="og:image" content="./preview.jpg">
     <meta property="og:type" content="website">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./icon.svg">
+    <link rel="apple-touch-icon" href="./icon.svg">
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
@@ -47,6 +53,10 @@
         .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
         .modal-body .btn-primary { width: 100%; background: #4CAF50; color: white; padding: 14px; }
+        @media (max-width: 600px) {
+            .app-header h1 { font-size: 1.2rem; }
+            .btn-primary { padding: 8px 15px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body>
@@ -67,6 +77,8 @@
                 </div>
             </section>
         </main>
+        
+        <!-- Modal Mascota -->
         <div id="modal-pet" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header"><h2>Nueva Mascota</h2><button class="btn-close">&times;</button></div>
@@ -79,6 +91,8 @@
                 </form>
             </div>
         </div>
+        
+        <!-- Modal Registro -->
         <div id="modal-record" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header"><h2>Nuevo Registro</h2><button class="btn-close">&times;</button></div>
@@ -93,11 +107,21 @@
             </div>
         </div>
     </div>
+
     <script>
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/service-worker.js').catch(err => console.log(err)); }
-        if ('Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
+        // Registrar Service Worker con ruta relativa
+        if ('serviceWorker' in navigator) { 
+            navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('Error SW:', err)); 
+        }
+        
+        // Solicitar permisos de notificación
+        if ('Notification' in window && Notification.permission === 'default') { 
+            Notification.requestPermission(); 
+        }
+
         let pets = JSON.parse(localStorage.getItem('pets')) || [];
         let currentPetId = null;
+        
         const petsList = document.getElementById('pets-list');
         const modalPet = document.getElementById('modal-pet');
         const modalRecord = document.getElementById('modal-record');
@@ -115,6 +139,7 @@
                 return `<div class="pet-card"><div class="pet-header"><div class="pet-info"><h3>${pet.name}</h3><p class="pet-type">${pet.type} ${pet.breed ? '- ' + pet.breed : ''}</p></div><div class="pet-actions"><button class="btn-icon" onclick="addRecord('${pet.id}')">+</button><button class="btn-icon btn-danger" onclick="deletePet('${pet.id}')">×</button></div></div>${nextVaccines.length > 0 ? `<div class="next-vaccines"><h4>Próximas dosis:</h4>${nextVaccines.slice(0, 3).map(v => `<div class="vaccine-alert ${v.daysLeft <= 7 ? 'urgent' : ''}"><span>${v.name}</span><span>${v.daysLeft} días</span></div>`).join('')}</div>` : '<p style="color:#999;text-align:center;">Sin registros</p>'}${urgentCount > 0 ? `<div class="alert-badge">⚠️ ${urgentCount} vacuna${urgentCount > 1 ? 's' : ''} pendiente${urgentCount > 1 ? 's' : ''}</div>` : ''}</div>`;
             }).join('');
         }
+
         function getNextVaccines(pet) {
             if (!pet.records) return [];
             const today = new Date();
@@ -125,14 +150,22 @@
                 return { ...record, nextDate, daysLeft };
             }).filter(r => r.daysLeft > 0).sort((a, b) => a.daysLeft - b.daysLeft);
         }
+
         document.getElementById('btn-add-pet').addEventListener('click', () => modalPet.classList.remove('hidden'));
+        
         formPet.addEventListener('submit', (e) => {
             e.preventDefault();
             pets.push({ id: Date.now().toString(), name: document.getElementById('pet-name').value, type: document.getElementById('pet-type').value, breed: document.getElementById('pet-breed').value, birthdate: document.getElementById('pet-birthdate').value, records: [] });
             localStorage.setItem('pets', JSON.stringify(pets));
             renderPets(); formPet.reset(); modalPet.classList.add('hidden');
         });
-        window.addRecord = function(petId) { currentPetId = petId; document.getElementById('record-date').valueAsDate = new Date(); modalRecord.classList.remove('hidden'); };
+
+        window.addRecord = function(petId) { 
+            currentPetId = petId; 
+            document.getElementById('record-date').valueAsDate = new Date(); 
+            modalRecord.classList.remove('hidden'); 
+        };
+
         formRecord.addEventListener('submit', (e) => {
             e.preventDefault();
             const pet = pets.find(p => p.id === currentPetId);
@@ -141,8 +174,20 @@
             localStorage.setItem('pets', JSON.stringify(pets));
             renderPets(); formRecord.reset(); modalRecord.classList.add('hidden');
         });
-        window.deletePet = function(petId) { if (confirm('¿Eliminar esta mascota?')) { pets = pets.filter(p => p.id !== petId); localStorage.setItem('pets', JSON.stringify(pets)); renderPets(); } };
-        document.querySelectorAll('.btn-close').forEach(btn => btn.addEventListener('click', () => { modalPet.classList.add('hidden'); modalRecord.classList.add('hidden'); }));
+
+        window.deletePet = function(petId) { 
+            if (confirm('¿Eliminar esta mascota?')) { 
+                pets = pets.filter(p => p.id !== petId); 
+                localStorage.setItem('pets', JSON.stringify(pets)); 
+                renderPets(); 
+            } 
+        };
+
+        document.querySelectorAll('.btn-close').forEach(btn => btn.addEventListener('click', () => { 
+            modalPet.classList.add('hidden'); 
+            modalRecord.classList.add('hidden'); 
+        }));
+
         renderPets();
     </script>
 </body>
