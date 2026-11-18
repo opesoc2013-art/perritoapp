@@ -1,18 +1,16 @@
-const CACHE_NAME = 'control-mascota-v2';
+const CACHE_NAME = 'control-mascota-v3';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './preview.jpg'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache abierto');
-        return cache.addAll(urlsToCache);
-      })
+      .then(cache => cache.addAll(urlsToCache))
       .catch(err => console.log('Error cacheando:', err))
   );
   self.skipWaiting();
