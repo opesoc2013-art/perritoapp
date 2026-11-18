@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Mascota</title>
+    <meta name="description" content="App para registrar vacunación y desparasitación de mascotas">
+    <meta name="theme-color" content="#4CAF50">
+    <meta property="og:title" content="🐾 Control Mascota">
+    <meta property="og:description" content="App para registrar vacunación y desparasitación de mascotas con alertas automáticas.">
+    <meta property="og:image" content="images/preview.jpg">
+    <meta property="og:type" content="website">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .app-container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .app-header { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-content { display: flex; align-items: center; gap: 12px; }
+        .app-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .app-main { padding: 20px; }
+        .pets-list { display: flex; flex-direction: column; gap: 15px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+        .empty-icon { font-size: 80px; margin-bottom: 20px; }
+        .empty-state p:first-of-type { font-size: 1.3rem; margin-bottom: 10px; color: #666; font-weight: 500; }
+        .pet-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #4CAF50; }
+        .pet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .pet-info h3 { font-size: 1.3rem; color: #333; margin-bottom: 5px; }
+        .pet-type { color: #666; font-size: 0.9rem; text-transform: capitalize; }
+        .pet-actions { display: flex; gap: 8px; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 50%; border: none; background: #4CAF50; color: white; font-size: 1.2rem; cursor: pointer; }
+        .btn-icon.btn-danger { background: #f44336; }
+        .next-vaccines { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        .next-vaccines h4 { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        .vaccine-alert { display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px; margin-bottom: 8px; }
+        .vaccine-alert.urgent { background: #fff3cd; border-left: 3px solid #ffc107; }
+        .alert-badge { background: #f44336; color: white; padding: 8px 12px; border-radius: 20px; font-size: 0.85rem; text-align: center; margin-top: 10px; }
+        .btn-primary { background: white; color: #4CAF50; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal.hidden { display: none; }
+        .modal-content { background: white; border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .btn-close { background: none; border: none; font-size: 2rem; color: #999; cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+        .modal-body .btn-primary { width: 100%; background: #4CAF50; color: white; padding: 14px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <span style="font-size: 2rem;">🐾</span>
+                <h1>Control Mascota</h1>
+            </div>
+            <button id="btn-add-pet" class="btn-primary">+ Nueva Mascota</button>
+        </header>
+        <main class="app-main">
+            <section id="pets-list" class="pets-list">
+                <div class="empty-state">
+                    <div class="empty-icon">🐶</div>
+                    <p>No hay mascotas registradas</p>
+                    <p>Agrega tu primera mascota para comenzar</p>
+                </div>
+            </section>
+        </main>
+        <div id="modal-pet" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header"><h2>Nueva Mascota</h2><button class="btn-close">&times;</button></div>
+                <form id="form-pet" class="modal-body">
+                    <div class="form-group"><label>Nombre</label><input type="text" id="pet-name" required></div>
+                    <div class="form-group"><label>Tipo</label><select id="pet-type" required><option value="">Seleccionar...</option><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select></div>
+                    <div class="form-group"><label>Raza</label><input type="text" id="pet-breed"></div>
+                    <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="pet-birthdate"></div>
+                    <button type="submit" class="btn-primary">Guardar Mascota</button>
+                </form>
+            </div>
+        </div>
+        <div id="modal-record" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header"><h2>Nuevo Registro</h2><button class="btn-close">&times;</button></div>
+                <form id="form-record" class="modal-body">
+                    <div class="form-group"><label>Tipo de registro</label><select id="record-type" required><option value="vacuna">Vacuna</option><option value="desparasitacion">Desparasitación</option></select></div>
+                    <div class="form-group"><label>Nombre</label><input type="text" id="record-name" placeholder="Ej: Rabia, Parvovirus..." required></div>
+                    <div class="form-group"><label>Fecha aplicada</label><input type="date" id="record-date" required></div>
+                    <div class="form-group"><label>Próxima dosis (meses)</label><input type="number" id="record-next-months" value="12" min="1" max="60"></div>
+                    <div class="form-group"><label>Notas</label><textarea id="record-notes" rows="3"></textarea></div>
+                    <button type="submit" class="btn-primary">Guardar Registro</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/service-worker.js').catch(err => console.log(err)); }
+        if ('Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
+        let pets = JSON.parse(localStorage.getItem('pets')) || [];
+        let currentPetId = null;
+        const petsList = document.getElementById('pets-list');
+        const modalPet = document.getElementById('modal-pet');
+        const modalRecord = document.getElementById('modal-record');
+        const formPet = document.getElementById('form-pet');
+        const formRecord = document.getElementById('form-record');
+        
+        function renderPets() {
+            if (pets.length === 0) {
+                petsList.innerHTML = `<div class="empty-state"><div class="empty-icon">🐶</div><p>No hay mascotas registradas</p><p>Agrega tu primera mascota para comenzar</p></div>`;
+                return;
+            }
+            petsList.innerHTML = pets.map(pet => {
+                const nextVaccines = getNextVaccines(pet);
+                const urgentCount = nextVaccines.filter(v => v.daysLeft <= 7).length;
+                return `<div class="pet-card"><div class="pet-header"><div class="pet-info"><h3>${pet.name}</h3><p class="pet-type">${pet.type} ${pet.breed ? '- ' + pet.breed : ''}</p></div><div class="pet-actions"><button class="btn-icon" onclick="addRecord('${pet.id}')">+</button><button class="btn-icon btn-danger" onclick="deletePet('${pet.id}')">×</button></div></div>${nextVaccines.length > 0 ? `<div class="next-vaccines"><h4>Próximas dosis:</h4>${nextVaccines.slice(0, 3).map(v => `<div class="vaccine-alert ${v.daysLeft <= 7 ? 'urgent' : ''}"><span>${v.name}</span><span>${v.daysLeft} días</span></div>`).join('')}</div>` : '<p style="color:#999;text-align:center;">Sin registros</p>'}${urgentCount > 0 ? `<div class="alert-badge">⚠️ ${urgentCount} vacuna${urgentCount > 1 ? 's' : ''} pendiente${urgentCount > 1 ? 's' : ''}</div>` : ''}</div>`;
+            }).join('');
+        }
+        function getNextVaccines(pet) {
+            if (!pet.records) return [];
+            const today = new Date();
+            return pet.records.map(record => {
+                const nextDate = new Date(record.date);
+                nextDate.setMonth(nextDate.getMonth() + record.nextMonths);
+                const daysLeft = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
+                return { ...record, nextDate, daysLeft };
+            }).filter(r => r.daysLeft > 0).sort((a, b) => a.daysLeft - b.daysLeft);
+        }
+        document.getElementById('btn-add-pet').addEventListener('click', () => modalPet.classList.remove('hidden'));
+        formPet.addEventListener('submit', (e) => {
+            e.preventDefault();
+            pets.push({ id: Date.now().toString(), name: document.getElementById('pet-name').value, type: document.getElementById('pet-type').value, breed: document.getElementById('pet-breed').value, birthdate: document.getElementById('pet-birthdate').value, records: [] });
+            localStorage.setItem('pets', JSON.stringify(pets));
+            renderPets(); formPet.reset(); modalPet.classList.add('hidden');
+        });
+        window.addRecord = function(petId) { currentPetId = petId; document.getElementById('record-date').valueAsDate = new Date(); modalRecord.classList.remove('hidden'); };
+        formRecord.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pet = pets.find(p => p.id === currentPetId);
+            if (!pet) return;
+            pet.records.push({ id: Date.now().toString(), type: document.getElementById('record-type').value, name: document.getElementById('record-name').value, date: document.getElementById('record-date').value, nextMonths: parseInt(document.getElementById('record-next-months').value), notes: document.getElementById('record-notes').value });
+            localStorage.setItem('pets', JSON.stringify(pets));
+            renderPets(); formRecord.reset(); modalRecord.classList.add('hidden');
+        });
+        window.deletePet = function(petId) { if (confirm('¿Eliminar esta mascota?')) { pets = pets.filter(p => p.id !== petId); localStorage.setItem('pets', JSON.stringify(pets)); renderPets(); } };
+        document.querySelectorAll('.btn-close').forEach(btn => btn.addEventListener('click', () => { modalPet.classList.add('hidden'); modalRecord.classList.add('hidden'); }));
+        renderPets();
+    </script>
+</body>
+</html>
