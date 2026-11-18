@@ -179,6 +179,7 @@
                 <h1>Control Mascota</h1>
             </div>
             <div class="header-actions">
+                <button class="btn-primary" id="btn-add-pet">+ Mascota</button>
                 <button class="btn-secondary" id="btn-dark-mode" title="Modo oscuro">🌙</button>
             </div>
         </header>
@@ -318,6 +319,7 @@
         const formRecord = document.getElementById('form-record');
         const formWeight = document.getElementById('form-weight');
         const formVet = document.getElementById('form-vet');
+        const btnAddPet = document.getElementById('btn-add-pet');
 
         // ===== MODO OSCURO =====
         const btnDark = document.getElementById('btn-dark-mode');
@@ -364,7 +366,6 @@
                 }
                 deferredPrompt = null;
             } else {
-                // Mostrar instrucciones manuales
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
                 const msg = isIOS 
                     ? '📱 Para instalar:\n1. Toca el botón "Compartir" de Safari\n2. Selecciona "Agregar a pantalla de inicio"\n3. Toca "Agregar"'
@@ -423,22 +424,11 @@
         }
 
         // ===== AGREGAR MASCOTA =====
-        document.getElementById('btn-add-pet') || document.addEventListener('DOMContentLoaded', () => {
-            // El botón está en el header, lo buscamos después
-        });
-        
-        // Reemplazamos el botón del header dinámicamente
-        const headerActions = document.querySelector('.header-actions');
-        const btnAddPet = document.createElement('button');
-        btnAddPet.className = 'btn-primary';
-        btnAddPet.textContent = '+ Mascota';
-        btnAddPet.style.marginLeft = '8px';
         btnAddPet.addEventListener('click', () => {
             formPet.reset();
             currentPetId = null;
             modalPet.classList.remove('hidden');
         });
-        headerActions.insertBefore(btnAddPet, btnDark);
 
         formPet.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -550,7 +540,6 @@
             if (!pet) return;
             
             const printWindow = window.open('', '_blank');
-            const nextVaccines = getNextVaccines(pet);
             
             printWindow.document.write(`
                 <html>
@@ -617,7 +606,6 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
             
-            // Recopilar eventos
             const events = {};
             pets.forEach(pet => {
                 (pet.records || []).forEach(r => {
@@ -641,7 +629,6 @@
             }
             document.getElementById('calendar-grid').innerHTML = html;
             
-            // Lista de eventos del mes
             const eventList = Object.entries(events).sort((a,b) => a[0]-b[0]);
             document.getElementById('calendar-events').innerHTML = eventList.length > 0 
                 ? '<h3 style="color: var(--text); margin-bottom: 10px;">Eventos del mes:</h3>' + eventList.map(([day, evs]) => `<div class="vaccine-alert"><span>Día ${day}</span><span>${evs.join(', ')}</span></div>`).join('')
