@@ -4,70 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control Mascota</title>
-    <meta name="description" content="App para registrar vacunación y desparasitación de mascotas con alertas automáticas">
+    <meta name="description" content="App para registrar vacunación y desparasitación de mascotas">
     <meta name="theme-color" content="#4CAF50">
-    
-    <!-- Open Graph / WhatsApp Preview -->
     <meta property="og:title" content="🐾 Control Mascota">
     <meta property="og:description" content="App para registrar vacunación y desparasitación de mascotas con alertas automáticas.">
     <meta property="og:image" content="./preview.jpg">
     <meta property="og:type" content="website">
-    
-    <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/svg+xml" href="./icon.svg">
     <link rel="apple-touch-icon" href="./icon.svg">
-    
     <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #45a049;
+            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: #ffffff;
+            --text: #333333;
+            --text-light: #666666;
+            --border: #dddddd;
+            --header-bg: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            --header-text: #ffffff;
+            --modal-bg: rgba(0,0,0,0.5);
+        }
+        body.dark {
+            --bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --card-bg: #2d2d44;
+            --text: #ffffff;
+            --text-light: #b0b0b0;
+            --border: #444444;
+            --header-bg: linear-gradient(135deg, #2d5a3d 0%, #1e3d2f 100%);
+            --modal-bg: rgba(0,0,0,0.7);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .app-container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); min-height: 100vh; color: var(--text); transition: all 0.3s; }
+        .app-container { max-width: 600px; margin: 0 auto; background: var(--card-bg); min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); padding-bottom: 60px; }
         
         /* Header */
-        .app-header { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .app-header { background: var(--header-bg); color: var(--header-text); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
         .header-content { display: flex; align-items: center; gap: 12px; }
         .header-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
         .app-header h1 { font-size: 1.4rem; font-weight: 600; }
+        .header-actions { display: flex; gap: 8px; }
         
-        /* Main & Empty State */
+        /* Main */
         .app-main { padding: 20px; }
         .pets-list { display: flex; flex-direction: column; gap: 15px; }
-        .empty-state { text-align: center; padding: 40px 20px; color: #666; }
-        .empty-img { width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 5px solid #4CAF50; box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3); margin-bottom: 20px; }
-        .empty-state p:first-of-type { font-size: 1.4rem; margin-bottom: 10px; color: #333; font-weight: 600; }
-        .empty-state p:last-of-type { font-size: 1rem; color: #888; }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
+        .empty-img { width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 5px solid var(--primary); box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3); margin-bottom: 20px; }
+        .empty-state p:first-of-type { font-size: 1.4rem; margin-bottom: 10px; color: var(--text); font-weight: 600; }
+        
+        /* Botón descargar */
+        .download-app-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A52 100%);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(238, 90, 82, 0.3);
+            transition: transform 0.2s;
+        }
+        .download-app-btn:hover { transform: translateY(-2px); }
         
         /* Pet Cards */
-        .pet-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #4CAF50; }
-        .pet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .pet-info h3 { font-size: 1.3rem; color: #333; margin-bottom: 5px; }
-        .pet-type { color: #666; font-size: 0.9rem; text-transform: capitalize; }
-        .pet-actions { display: flex; gap: 8px; }
-        .btn-icon { width: 36px; height: 36px; border-radius: 50%; border: none; background: #4CAF50; color: white; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .pet-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid var(--primary); }
+        .pet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 10px; }
+        .pet-header-left { display: flex; gap: 12px; align-items: center; flex: 1; }
+        .pet-photo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .pet-info h3 { font-size: 1.2rem; color: var(--text); margin-bottom: 3px; }
+        .pet-type { color: var(--text-light); font-size: 0.85rem; text-transform: capitalize; }
+        .pet-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-icon { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--primary); color: white; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-icon.btn-danger { background: #f44336; }
-        .next-vaccines { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-        .next-vaccines h4 { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
-        .vaccine-alert { display: flex; justify-content: space-between; padding: 10px; background: #f5f5f5; border-radius: 8px; margin-bottom: 8px; }
+        .btn-icon.btn-info { background: #2196F3; }
+        .btn-icon.btn-warn { background: #FF9800; }
+        
+        .pet-details { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--text-light); }
+        .pet-details strong { color: var(--text); }
+        
+        .next-vaccines { margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
+        .next-vaccines h4 { font-size: 0.9rem; color: var(--text-light); margin-bottom: 10px; }
+        .vaccine-alert { display: flex; justify-content: space-between; padding: 10px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
         .vaccine-alert.urgent { background: #fff3cd; border-left: 3px solid #ffc107; }
+        body.dark .vaccine-alert.urgent { background: #4a3f1a; }
         .alert-badge { background: #f44336; color: white; padding: 8px 12px; border-radius: 20px; font-size: 0.85rem; text-align: center; margin-top: 10px; }
         
-        /* Buttons & Modals */
-        .btn-primary { background: white; color: #4CAF50; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-        .modal.hidden { display: none; }
-        .modal-content { background: white; border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .btn-close { background: none; border: none; font-size: 2rem; color: #999; cursor: pointer; }
-        .modal-body { padding: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-        .modal-body .btn-primary { width: 100%; background: #4CAF50; color: white; padding: 14px; }
+        /* Botones primarios */
+        .btn-primary { background: white; color: var(--primary); border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+        body.dark .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: transparent; color: var(--header-text); border: 1px solid rgba(255,255,255,0.5); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; }
         
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--modal-bg); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal.hidden { display: none; }
+        .modal-content { background: var(--card-bg); border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { color: var(--text); font-size: 1.3rem; }
+        .btn-close { background: none; border: none; font-size: 2rem; color: var(--text-light); cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text); font-weight: 500; font-size: 0.95rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background: var(--card-bg); color: var(--text); }
+        .modal-body .btn-primary { width: 100%; background: var(--primary); color: white; padding: 14px; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+        .tab { padding: 10px 15px; cursor: pointer; border: none; background: none; color: var(--text-light); font-weight: 500; border-bottom: 3px solid transparent; }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Calendario */
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 15px; }
+        .calendar-header { font-weight: 600; text-align: center; padding: 8px; color: var(--text-light); font-size: 0.8rem; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.85rem; background: var(--card-bg); border: 1px solid var(--border); position: relative; }
+        .calendar-day.has-event { background: var(--primary); color: white; font-weight: 600; }
+        .calendar-day.today { border: 2px solid #FF9800; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        /* Peso */
+        .weight-list { margin-top: 15px; }
+        .weight-item { display: flex; justify-content: space-between; padding: 10px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+        
+        /* Veterinario */
+        .vet-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .vet-card h3 { color: var(--primary); margin-bottom: 10px; }
+        .vet-info { display: flex; flex-direction: column; gap: 8px; }
+        .vet-info-item { display: flex; align-items: center; gap: 10px; color: var(--text); }
+        
+        /* Footer */
+        .app-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            z-index: 50;
+            border-top-right-radius: 8px;
+        }
+        
+        /* Responsive */
         @media (max-width: 600px) {
-            .app-header h1 { font-size: 1.2rem; }
-            .btn-primary { padding: 8px 15px; font-size: 0.9rem; }
+            .app-header h1 { font-size: 1.1rem; }
+            .btn-primary { padding: 8px 12px; font-size: 0.85rem; }
             .empty-img { width: 160px; height: 160px; }
+        }
+        
+        /* Print styles para PDF */
+        @media print {
+            body { background: white; }
+            .app-header, .app-footer, .btn-primary, .btn-icon, .download-app-btn, .tabs { display: none !important; }
+            .app-container { max-width: 100%; box-shadow: none; }
+            .pet-card { break-inside: avoid; border: 1px solid #ddd; margin-bottom: 15px; }
         }
     </style>
 </head>
@@ -75,22 +175,54 @@
     <div class="app-container">
         <header class="app-header">
             <div class="header-content">
-                <!-- Pequeña imagen en el header -->
                 <img src="./preview.jpg" alt="Logo" class="header-img">
                 <h1>Control Mascota</h1>
             </div>
-            <button id="btn-add-pet" class="btn-primary">+ Nueva Mascota</button>
+            <div class="header-actions">
+                <button class="btn-secondary" id="btn-dark-mode" title="Modo oscuro">🌙</button>
+            </div>
         </header>
         
         <main class="app-main">
-            <section id="pets-list" class="pets-list">
-                <!-- Estado vacío con la imagen del perro -->
-                <div class="empty-state">
-                    <img src="./preview.jpg" alt="Perro veterinario" class="empty-img">
-                    <p>No hay mascotas registradas</p>
-                    <p>Agrega tu primera mascota para comenzar</p>
+            <!-- Botón descargar app -->
+            <button id="btn-download-app" class="download-app-btn">
+                📱 <span id="download-text">Descargar app en móvil</span>
+            </button>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="mascotas">🐾 Mascotas</button>
+                <button class="tab" data-tab="calendario">📅 Calendario</button>
+                <button class="tab" data-tab="veterinario">🏥 Veterinario</button>
+            </div>
+            
+            <!-- Tab Mascotas -->
+            <div id="tab-mascotas" class="tab-content active">
+                <section id="pets-list" class="pets-list">
+                    <div class="empty-state">
+                        <img src="./preview.jpg" alt="Perro" class="empty-img">
+                        <p>No hay mascotas registradas</p>
+                        <p>Agrega tu primera mascota para comenzar</p>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Tab Calendario -->
+            <div id="tab-calendario" class="tab-content">
+                <div class="calendar-nav">
+                    <button class="btn-primary" id="cal-prev">◀</button>
+                    <h3 id="cal-month-year" style="color: var(--text);"></h3>
+                    <button class="btn-primary" id="cal-next">▶</button>
                 </div>
-            </section>
+                <div class="calendar" id="calendar-grid"></div>
+                <div id="calendar-events" style="margin-top: 20px;"></div>
+            </div>
+            
+            <!-- Tab Veterinario -->
+            <div id="tab-veterinario" class="tab-content">
+                <div id="vet-info-container"></div>
+                <button class="btn-primary" id="btn-edit-vet" style="background: var(--primary); color: white; width: 100%; padding: 14px;">✏️ Editar datos del veterinario</button>
+            </div>
         </main>
         
         <!-- Modal Mascota -->
@@ -98,65 +230,184 @@
             <div class="modal-content">
                 <div class="modal-header"><h2>Nueva Mascota</h2><button class="btn-close">&times;</button></div>
                 <form id="form-pet" class="modal-body">
-                    <div class="form-group"><label>Nombre</label><input type="text" id="pet-name" required></div>
-                    <div class="form-group"><label>Tipo</label><select id="pet-type" required><option value="">Seleccionar...</option><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select></div>
+                    <div class="form-group">
+                        <label>Foto</label>
+                        <input type="file" id="pet-photo" accept="image/*" capture="environment">
+                    </div>
+                    <div class="form-group"><label>Nombre *</label><input type="text" id="pet-name" required></div>
+                    <div class="form-group"><label>Tipo *</label><select id="pet-type" required><option value="">Seleccionar...</option><option value="perro">Perro</option><option value="gato">Gato</option><option value="otro">Otro</option></select></div>
                     <div class="form-group"><label>Raza</label><input type="text" id="pet-breed"></div>
                     <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="pet-birthdate"></div>
+                    <div class="form-group"><label>Peso actual (kg)</label><input type="number" id="pet-weight" step="0.1" min="0"></div>
+                    <div class="form-group"><label>Alergias</label><textarea id="pet-allergies" rows="2" placeholder="Ej: Penicilina, ciertos alimentos..."></textarea></div>
+                    <div class="form-group"><label>Cirugías previas</label><textarea id="pet-surgeries" rows="2" placeholder="Ej: Esterilización en 2023..."></textarea></div>
                     <button type="submit" class="btn-primary">Guardar Mascota</button>
                 </form>
             </div>
         </div>
         
-        <!-- Modal Registro -->
+        <!-- Modal Registro (vacuna/desparasitación) -->
         <div id="modal-record" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header"><h2>Nuevo Registro</h2><button class="btn-close">&times;</button></div>
                 <form id="form-record" class="modal-body">
-                    <div class="form-group"><label>Tipo de registro</label><select id="record-type" required><option value="vacuna">Vacuna</option><option value="desparasitacion">Desparasitación</option></select></div>
-                    <div class="form-group"><label>Nombre</label><input type="text" id="record-name" placeholder="Ej: Rabia, Parvovirus..." required></div>
-                    <div class="form-group"><label>Fecha aplicada</label><input type="date" id="record-date" required></div>
+                    <div class="form-group"><label>Tipo *</label><select id="record-type" required><option value="vacuna">Vacuna</option><option value="desparasitacion">Desparasitación</option></select></div>
+                    <div class="form-group"><label>Nombre *</label><input type="text" id="record-name" placeholder="Ej: Rabia, Parvovirus..." required></div>
+                    <div class="form-group"><label>Fecha aplicada *</label><input type="date" id="record-date" required></div>
                     <div class="form-group"><label>Próxima dosis (meses)</label><input type="number" id="record-next-months" value="12" min="1" max="60"></div>
                     <div class="form-group"><label>Notas</label><textarea id="record-notes" rows="3"></textarea></div>
                     <button type="submit" class="btn-primary">Guardar Registro</button>
                 </form>
             </div>
         </div>
+        
+        <!-- Modal Peso -->
+        <div id="modal-weight" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header"><h2>Registrar Peso</h2><button class="btn-close">&times;</button></div>
+                <form id="form-weight" class="modal-body">
+                    <div class="form-group"><label>Peso (kg) *</label><input type="number" id="weight-value" step="0.1" min="0" required></div>
+                    <div class="form-group"><label>Fecha</label><input type="date" id="weight-date" required></div>
+                    <div class="form-group"><label>Notas</label><textarea id="weight-notes" rows="2"></textarea></div>
+                    <button type="submit" class="btn-primary">Guardar Peso</button>
+                </form>
+                <div class="weight-list" id="weight-list"></div>
+            </div>
+        </div>
+        
+        <!-- Modal Veterinario -->
+        <div id="modal-vet" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header"><h2>Datos del Veterinario</h2><button class="btn-close">&times;</button></div>
+                <form id="form-vet" class="modal-body">
+                    <div class="form-group"><label>Nombre / Clínica</label><input type="text" id="vet-name"></div>
+                    <div class="form-group"><label>Teléfono</label><input type="tel" id="vet-phone"></div>
+                    <div class="form-group"><label>Dirección</label><input type="text" id="vet-address"></div>
+                    <div class="form-group"><label>Horario</label><input type="text" id="vet-schedule" placeholder="Ej: Lun-Vie 9-18hs"></div>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
     </div>
+    
+    <div class="app-footer">Creador DFF</div>
 
     <script>
-        // Registrar Service Worker con ruta relativa
+        // ===== SERVICE WORKER =====
         if ('serviceWorker' in navigator) { 
             navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('Error SW:', err)); 
         }
-        
-        // Solicitar permisos de notificación
         if ('Notification' in window && Notification.permission === 'default') { 
             Notification.requestPermission(); 
         }
 
+        // ===== ESTADO =====
         let pets = JSON.parse(localStorage.getItem('pets')) || [];
+        let vetData = JSON.parse(localStorage.getItem('vetData')) || {};
         let currentPetId = null;
-        
+        let currentCalDate = new Date();
+        let deferredPrompt = null;
+
+        // ===== ELEMENTOS DOM =====
         const petsList = document.getElementById('pets-list');
         const modalPet = document.getElementById('modal-pet');
         const modalRecord = document.getElementById('modal-record');
+        const modalWeight = document.getElementById('modal-weight');
+        const modalVet = document.getElementById('modal-vet');
         const formPet = document.getElementById('form-pet');
         const formRecord = document.getElementById('form-record');
+        const formWeight = document.getElementById('form-weight');
+        const formVet = document.getElementById('form-vet');
+
+        // ===== MODO OSCURO =====
+        const btnDark = document.getElementById('btn-dark-mode');
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            btnDark.textContent = '☀️';
+        }
+        btnDark.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            btnDark.textContent = isDark ? '☀️' : '🌙';
+        });
+
+        // ===== TABS =====
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+                if (tab.dataset.tab === 'calendario') renderCalendar();
+                if (tab.dataset.tab === 'veterinario') renderVet();
+            });
+        });
+
+        // ===== BOTÓN DESCARGAR APP =====
+        const btnDownload = document.getElementById('btn-download-app');
+        const downloadText = document.getElementById('download-text');
         
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            downloadText.textContent = 'Instalar app ahora';
+        });
+        
+        btnDownload.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    downloadText.textContent = '✅ App instalada';
+                    btnDownload.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                }
+                deferredPrompt = null;
+            } else {
+                // Mostrar instrucciones manuales
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const msg = isIOS 
+                    ? '📱 Para instalar:\n1. Toca el botón "Compartir" de Safari\n2. Selecciona "Agregar a pantalla de inicio"\n3. Toca "Agregar"'
+                    : '📱 Para instalar:\n1. Toca el menú (⋮) del navegador\n2. Selecciona "Instalar app" o "Agregar a pantalla de inicio"';
+                alert(msg);
+            }
+        });
+
+        // ===== RENDER MASCOTAS =====
         function renderPets() {
             if (pets.length === 0) {
-                petsList.innerHTML = `
-                    <div class="empty-state">
-                        <img src="./preview.jpg" alt="Perro veterinario" class="empty-img">
-                        <p>No hay mascotas registradas</p>
-                        <p>Agrega tu primera mascota para comenzar</p>
-                    </div>`;
+                petsList.innerHTML = `<div class="empty-state"><img src="./preview.jpg" alt="Perro" class="empty-img"><p>No hay mascotas registradas</p><p>Agrega tu primera mascota para comenzar</p></div>`;
                 return;
             }
             petsList.innerHTML = pets.map(pet => {
                 const nextVaccines = getNextVaccines(pet);
                 const urgentCount = nextVaccines.filter(v => v.daysLeft <= 7).length;
-                return `<div class="pet-card"><div class="pet-header"><div class="pet-info"><h3>${pet.name}</h3><p class="pet-type">${pet.type} ${pet.breed ? '- ' + pet.breed : ''}</p></div><div class="pet-actions"><button class="btn-icon" onclick="addRecord('${pet.id}')">+</button><button class="btn-icon btn-danger" onclick="deletePet('${pet.id}')">×</button></div></div>${nextVaccines.length > 0 ? `<div class="next-vaccines"><h4>Próximas dosis:</h4>${nextVaccines.slice(0, 3).map(v => `<div class="vaccine-alert ${v.daysLeft <= 7 ? 'urgent' : ''}"><span>${v.name}</span><span>${v.daysLeft} días</span></div>`).join('')}</div>` : '<p style="color:#999;text-align:center;">Sin registros</p>'}${urgentCount > 0 ? `<div class="alert-badge">⚠️ ${urgentCount} vacuna${urgentCount > 1 ? 's' : ''} pendiente${urgentCount > 1 ? 's' : ''}</div>` : ''}</div>`;
+                const photo = pet.photo ? `<img src="${pet.photo}" class="pet-photo">` : '';
+                const details = [];
+                if (pet.allergies) details.push(`<strong>Alergias:</strong> ${pet.allergies}`);
+                if (pet.surgeries) details.push(`<strong>Cirugías:</strong> ${pet.surgeries}`);
+                if (pet.weight) details.push(`<strong>Peso:</strong> ${pet.weight} kg`);
+                
+                return `<div class="pet-card">
+                    <div class="pet-header">
+                        <div class="pet-header-left">
+                            ${photo}
+                            <div class="pet-info">
+                                <h3>${pet.name}</h3>
+                                <p class="pet-type">${pet.type} ${pet.breed ? '- ' + pet.breed : ''}</p>
+                            </div>
+                        </div>
+                        <div class="pet-actions">
+                            <button class="btn-icon" onclick="addRecord('${pet.id}')" title="Agregar registro">+</button>
+                            <button class="btn-icon btn-info" onclick="addWeight('${pet.id}')" title="Peso">⚖️</button>
+                            <button class="btn-icon btn-warn" onclick="exportPetPDF('${pet.id}')" title="Exportar PDF">📄</button>
+                            <button class="btn-icon btn-danger" onclick="deletePet('${pet.id}')" title="Eliminar">×</button>
+                        </div>
+                    </div>
+                    ${details.length > 0 ? `<div class="pet-details">${details.join(' | ')}</div>` : ''}
+                    ${nextVaccines.length > 0 ? `<div class="next-vaccines"><h4>Próximas dosis:</h4>${nextVaccines.slice(0, 3).map(v => `<div class="vaccine-alert ${v.daysLeft <= 7 ? 'urgent' : ''}"><span>${v.name} (${v.type})</span><span>${v.daysLeft} días</span></div>`).join('')}</div>` : ''}
+                    ${urgentCount > 0 ? `<div class="alert-badge">⚠️ ${urgentCount} vacuna${urgentCount > 1 ? 's' : ''} pendiente${urgentCount > 1 ? 's' : ''}</div>` : ''}
+                </div>`;
             }).join('');
         }
 
@@ -171,43 +422,290 @@
             }).filter(r => r.daysLeft > 0).sort((a, b) => a.daysLeft - b.daysLeft);
         }
 
-        document.getElementById('btn-add-pet').addEventListener('click', () => modalPet.classList.remove('hidden'));
+        // ===== AGREGAR MASCOTA =====
+        document.getElementById('btn-add-pet') || document.addEventListener('DOMContentLoaded', () => {
+            // El botón está en el header, lo buscamos después
+        });
         
+        // Reemplazamos el botón del header dinámicamente
+        const headerActions = document.querySelector('.header-actions');
+        const btnAddPet = document.createElement('button');
+        btnAddPet.className = 'btn-primary';
+        btnAddPet.textContent = '+ Mascota';
+        btnAddPet.style.marginLeft = '8px';
+        btnAddPet.addEventListener('click', () => {
+            formPet.reset();
+            currentPetId = null;
+            modalPet.classList.remove('hidden');
+        });
+        headerActions.insertBefore(btnAddPet, btnDark);
+
         formPet.addEventListener('submit', (e) => {
             e.preventDefault();
-            pets.push({ id: Date.now().toString(), name: document.getElementById('pet-name').value, type: document.getElementById('pet-type').value, breed: document.getElementById('pet-breed').value, birthdate: document.getElementById('pet-birthdate').value, records: [] });
-            localStorage.setItem('pets', JSON.stringify(pets));
-            renderPets(); formPet.reset(); modalPet.classList.add('hidden');
+            const photoInput = document.getElementById('pet-photo');
+            const savePet = (photoData) => {
+                const pet = {
+                    id: Date.now().toString(),
+                    name: document.getElementById('pet-name').value,
+                    type: document.getElementById('pet-type').value,
+                    breed: document.getElementById('pet-breed').value,
+                    birthdate: document.getElementById('pet-birthdate').value,
+                    weight: document.getElementById('pet-weight').value,
+                    allergies: document.getElementById('pet-allergies').value,
+                    surgeries: document.getElementById('pet-surgeries').value,
+                    photo: photoData,
+                    records: [],
+                    weights: []
+                };
+                pets.push(pet);
+                localStorage.setItem('pets', JSON.stringify(pets));
+                renderPets();
+                formPet.reset();
+                modalPet.classList.add('hidden');
+            };
+            
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => savePet(e.target.result);
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                savePet(null);
+            }
         });
 
-        window.addRecord = function(petId) { 
-            currentPetId = petId; 
-            document.getElementById('record-date').valueAsDate = new Date(); 
-            modalRecord.classList.remove('hidden'); 
+        // ===== AGREGAR REGISTRO =====
+        window.addRecord = function(petId) {
+            currentPetId = petId;
+            document.getElementById('record-date').valueAsDate = new Date();
+            modalRecord.classList.remove('hidden');
         };
 
         formRecord.addEventListener('submit', (e) => {
             e.preventDefault();
             const pet = pets.find(p => p.id === currentPetId);
             if (!pet) return;
-            pet.records.push({ id: Date.now().toString(), type: document.getElementById('record-type').value, name: document.getElementById('record-name').value, date: document.getElementById('record-date').value, nextMonths: parseInt(document.getElementById('record-next-months').value), notes: document.getElementById('record-notes').value });
+            pet.records = pet.records || [];
+            pet.records.push({
+                id: Date.now().toString(),
+                type: document.getElementById('record-type').value,
+                name: document.getElementById('record-name').value,
+                date: document.getElementById('record-date').value,
+                nextMonths: parseInt(document.getElementById('record-next-months').value),
+                notes: document.getElementById('record-notes').value
+            });
             localStorage.setItem('pets', JSON.stringify(pets));
-            renderPets(); formRecord.reset(); modalRecord.classList.add('hidden');
+            renderPets();
+            formRecord.reset();
+            modalRecord.classList.add('hidden');
         });
 
-        window.deletePet = function(petId) { 
-            if (confirm('¿Eliminar esta mascota?')) { 
-                pets = pets.filter(p => p.id !== petId); 
-                localStorage.setItem('pets', JSON.stringify(pets)); 
-                renderPets(); 
-            } 
+        // ===== PESO =====
+        window.addWeight = function(petId) {
+            currentPetId = petId;
+            document.getElementById('weight-date').valueAsDate = new Date();
+            renderWeightList();
+            modalWeight.classList.remove('hidden');
         };
 
-        document.querySelectorAll('.btn-close').forEach(btn => btn.addEventListener('click', () => { 
-            modalPet.classList.add('hidden'); 
-            modalRecord.classList.add('hidden'); 
-        }));
+        function renderWeightList() {
+            const pet = pets.find(p => p.id === currentPetId);
+            if (!pet || !pet.weights || pet.weights.length === 0) {
+                document.getElementById('weight-list').innerHTML = '<p style="color: var(--text-light); text-align: center; margin-top: 15px;">Sin registros de peso</p>';
+                return;
+            }
+            document.getElementById('weight-list').innerHTML = '<h4 style="margin-top: 20px; color: var(--text);">Historial:</h4>' + 
+                pet.weights.slice().reverse().map(w => `<div class="weight-item"><span>${w.date}</span><strong>${w.value} kg</strong>${w.notes ? '<br><small style="color: var(--text-light);">' + w.notes + '</small>' : ''}</div>`).join('');
+        }
 
+        formWeight.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pet = pets.find(p => p.id === currentPetId);
+            if (!pet) return;
+            pet.weights = pet.weights || [];
+            pet.weights.push({
+                value: document.getElementById('weight-value').value,
+                date: document.getElementById('weight-date').value,
+                notes: document.getElementById('weight-notes').value
+            });
+            pet.weight = document.getElementById('weight-value').value;
+            localStorage.setItem('pets', JSON.stringify(pets));
+            renderPets();
+            renderWeightList();
+            formWeight.reset();
+            document.getElementById('weight-date').valueAsDate = new Date();
+        });
+
+        // ===== ELIMINAR MASCOTA =====
+        window.deletePet = function(petId) {
+            if (confirm('¿Eliminar esta mascota y todos sus registros?')) {
+                pets = pets.filter(p => p.id !== petId);
+                localStorage.setItem('pets', JSON.stringify(pets));
+                renderPets();
+            }
+        };
+
+        // ===== EXPORTAR PDF =====
+        window.exportPetPDF = function(petId) {
+            const pet = pets.find(p => p.id === petId);
+            if (!pet) return;
+            
+            const printWindow = window.open('', '_blank');
+            const nextVaccines = getNextVaccines(pet);
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Ficha de ${pet.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 30px; color: #333; }
+                        h1 { color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                        h2 { color: #4CAF50; margin-top: 25px; }
+                        .info { background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+                        .info p { margin: 5px 0; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                        th { background: #4CAF50; color: white; }
+                        .footer { margin-top: 40px; text-align: center; color: #999; font-size: 0.9em; }
+                    </style>
+                </head>
+                <body>
+                    <h1>🐾 Ficha de ${pet.name}</h1>
+                    <div class="info">
+                        <p><strong>Tipo:</strong> ${pet.type} ${pet.breed ? '- ' + pet.breed : ''}</p>
+                        ${pet.birthdate ? `<p><strong>Fecha de nacimiento:</strong> ${pet.birthdate}</p>` : ''}
+                        ${pet.weight ? `<p><strong>Peso actual:</strong> ${pet.weight} kg</p>` : ''}
+                        ${pet.allergies ? `<p><strong>Alergias:</strong> ${pet.allergies}</p>` : ''}
+                        ${pet.surgeries ? `<p><strong>Cirugías:</strong> ${pet.surgeries}</p>` : ''}
+                    </div>
+                    <h2>Vacunas y Desparasitaciones</h2>
+                    ${pet.records && pet.records.length > 0 ? `
+                        <table>
+                            <tr><th>Tipo</th><th>Nombre</th><th>Fecha</th><th>Próxima dosis</th></tr>
+                            ${pet.records.map(r => {
+                                const next = new Date(r.date);
+                                next.setMonth(next.getMonth() + r.nextMonths);
+                                return `<tr><td>${r.type}</td><td>${r.name}</td><td>${r.date}</td><td>${next.toISOString().split('T')[0]}</td></tr>`;
+                            }).join('')}
+                        </table>
+                    ` : '<p>Sin registros</p>'}
+                    ${pet.weights && pet.weights.length > 0 ? `
+                        <h2>Historial de Peso</h2>
+                        <table>
+                            <tr><th>Fecha</th><th>Peso</th><th>Notas</th></tr>
+                            ${pet.weights.map(w => `<tr><td>${w.date}</td><td>${w.value} kg</td><td>${w.notes || ''}</td></tr>`).join('')}
+                        </table>
+                    ` : ''}
+                    <div class="footer">
+                        <p>Generado por Control Mascota - Creador DFF</p>
+                        <p>Fecha: ${new Date().toLocaleDateString('es-AR')}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            setTimeout(() => printWindow.print(), 500);
+        };
+
+        // ===== CALENDARIO =====
+        function renderCalendar() {
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('cal-month-year').textContent = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            
+            // Recopilar eventos
+            const events = {};
+            pets.forEach(pet => {
+                (pet.records || []).forEach(r => {
+                    const next = new Date(r.date);
+                    next.setMonth(next.getMonth() + r.nextMonths);
+                    if (next.getFullYear() === year && next.getMonth() === month) {
+                        const day = next.getDate();
+                        if (!events[day]) events[day] = [];
+                        events[day].push(`${pet.name}: ${r.name}`);
+                    }
+                });
+            });
+            
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            let html = days.map(d => `<div class="calendar-header">${d}</div>`).join('');
+            for (let i = 0; i < firstDay; i++) html += '<div class="calendar-day"></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+                const hasEvent = events[d];
+                html += `<div class="calendar-day ${hasEvent ? 'has-event' : ''} ${isToday ? 'today' : ''}" ${hasEvent ? `title="${events[d].join(', ')}"` : ''}>${d}</div>`;
+            }
+            document.getElementById('calendar-grid').innerHTML = html;
+            
+            // Lista de eventos del mes
+            const eventList = Object.entries(events).sort((a,b) => a[0]-b[0]);
+            document.getElementById('calendar-events').innerHTML = eventList.length > 0 
+                ? '<h3 style="color: var(--text); margin-bottom: 10px;">Eventos del mes:</h3>' + eventList.map(([day, evs]) => `<div class="vaccine-alert"><span>Día ${day}</span><span>${evs.join(', ')}</span></div>`).join('')
+                : '<p style="color: var(--text-light); text-align: center;">Sin eventos este mes</p>';
+        }
+        
+        document.getElementById('cal-prev').addEventListener('click', () => {
+            currentCalDate.setMonth(currentCalDate.getMonth() - 1);
+            renderCalendar();
+        });
+        document.getElementById('cal-next').addEventListener('click', () => {
+            currentCalDate.setMonth(currentCalDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        // ===== VETERINARIO =====
+        function renderVet() {
+            const container = document.getElementById('vet-info-container');
+            if (!vetData.name && !vetData.phone) {
+                container.innerHTML = '<div class="vet-card"><p style="color: var(--text-light); text-align: center;">No hay datos de veterinario registrados</p></div>';
+                return;
+            }
+            container.innerHTML = `<div class="vet-card">
+                <h3>🏥 ${vetData.name || 'Veterinario'}</h3>
+                <div class="vet-info">
+                    ${vetData.phone ? `<div class="vet-info-item">📞 <a href="tel:${vetData.phone}" style="color: var(--primary); text-decoration: none;">${vetData.phone}</a></div>` : ''}
+                    ${vetData.address ? `<div class="vet-info-item">📍 ${vetData.address}</div>` : ''}
+                    ${vetData.schedule ? `<div class="vet-info-item">🕐 ${vetData.schedule}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        document.getElementById('btn-edit-vet').addEventListener('click', () => {
+            document.getElementById('vet-name').value = vetData.name || '';
+            document.getElementById('vet-phone').value = vetData.phone || '';
+            document.getElementById('vet-address').value = vetData.address || '';
+            document.getElementById('vet-schedule').value = vetData.schedule || '';
+            modalVet.classList.remove('hidden');
+        });
+
+        formVet.addEventListener('submit', (e) => {
+            e.preventDefault();
+            vetData = {
+                name: document.getElementById('vet-name').value,
+                phone: document.getElementById('vet-phone').value,
+                address: document.getElementById('vet-address').value,
+                schedule: document.getElementById('vet-schedule').value
+            };
+            localStorage.setItem('vetData', JSON.stringify(vetData));
+            renderVet();
+            modalVet.classList.add('hidden');
+        });
+
+        // ===== CERRAR MODALES =====
+        document.querySelectorAll('.btn-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalPet.classList.add('hidden');
+                modalRecord.classList.add('hidden');
+                modalWeight.classList.add('hidden');
+                modalVet.classList.add('hidden');
+            });
+        });
+
+        // ===== INICIALIZAR =====
         renderPets();
     </script>
 </body>
